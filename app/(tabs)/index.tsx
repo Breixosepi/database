@@ -9,8 +9,9 @@ import {
   Alert,
   Modal,
   TouchableOpacity,
-  ScrollView
+  ScrollView,
 } from "react-native";
+
 
 const url = "https://medicine-backend-8n75.onrender.com/api/patient";
 const itemsPerPage = 10;
@@ -33,6 +34,9 @@ export default function HomeScreen() {
     location: "",
   });
 
+  const [selectedPatient, setSelectedPatient] = useState<any | null>(null); // Paciente seleccionado para editar/eliminar
+  const [showOptions, setShowOptions] = useState(false); // Estado para mostrar opciones (editar/eliminar)
+
   useEffect(() => {
     (async () => {
       try {
@@ -42,7 +46,6 @@ export default function HomeScreen() {
         }
 
         const json = await response.json();
-        console.log(json);
         setPatients(json);
       } catch (error: any) {
         console.error(error.message);
@@ -89,7 +92,7 @@ export default function HomeScreen() {
   };
 
   // Funciones de los botones: Eliminar, Editar, Detalles
-  const handleOpcion = (id: number) => {
+  const handleDelete = (id: number) => {
     Alert.alert(
       "Eliminar Registro",
       "¿Estás seguro de que deseas eliminar este registro?",
@@ -97,10 +100,29 @@ export default function HomeScreen() {
         { text: "Cancelar" },
         {
           text: "Eliminar",
-          onPress: () => console.log(`Eliminar item con id ${id}`),
+          onPress: () => {
+            console.log(`Eliminar item con id ${id}`);
+            // Aquí puedes implementar la lógica de eliminación de datos en la API.
+          },
         },
       ]
     );
+  };
+
+  const handleEdit = () => {
+    // Aquí puedes abrir un modal o formulario de edición con los datos del paciente seleccionado.
+    setShowForm(true);
+    setNewPatient(selectedPatient);
+  };
+
+  const showActionMenu = (patient: any) => {
+    setSelectedPatient(patient);
+    setShowOptions(true); // Mostrar opciones de editar/eliminar
+  };
+
+  const closeActionMenu = () => {
+    setShowOptions(false);
+    setSelectedPatient(null); // Limpiar paciente seleccionado
   };
 
   // Función para abrir el formulario
@@ -151,6 +173,7 @@ export default function HomeScreen() {
 
   return (
     <ScrollView
+
     >
       <View style={styles.searchContainer}>
         <TextInput
@@ -181,7 +204,7 @@ export default function HomeScreen() {
 
         <FlatList
           data={currentItems}
-          keyExtractor={(item: any) => item.id}
+          keyExtractor={(item: any) => item.id.toString()}
           renderItem={({ item }) => (
             <View style={styles.tableRow}>
               <Text style={styles.tableCell}>{item.fullName}</Text>
@@ -195,7 +218,10 @@ export default function HomeScreen() {
               <Text style={styles.tableCell}>{item.family}</Text>
               <Text style={styles.tableCell}>{item.location}</Text>
               <View style={styles.actionsCell}>
-                <Button title="Opciones" onPress={() => handleOpcion(item.id)} />
+                <Button
+                  title="Opciones"
+                  onPress={() => showActionMenu(item)}
+                />
               </View>
             </View>
           )}
@@ -208,15 +234,31 @@ export default function HomeScreen() {
         <Button title="Siguiente" onPress={goToNextPage} />
       </View>
 
+      {/* Opciones Modal */}
+      <Modal visible={showOptions} animationType="slide" transparent={true}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Seleccione una opción</Text>
+
+            <Button title="Editar" onPress={handleEdit} />
+            <Button title="Eliminar" onPress={() => handleDelete(selectedPatient.id)} />
+
+            <TouchableOpacity onPress={closeActionMenu}>
+              <Text style={styles.modalCloseButton}>Cerrar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       {/* Formulario Modal */}
       <Modal visible={showForm} animationType="slide" transparent={true}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Agregar Nuevo Paciente</Text>
+            <Text style={styles.modalTitle}>Formulario de Nuevo Paciente</Text>
 
             <TextInput
               style={styles.input}
-              placeholder="Nombre completo"
+              placeholder="Nombre"
               value={newPatient.fullName}
               onChangeText={(text) =>
                 setNewPatient({ ...newPatient, fullName: text })
@@ -224,7 +266,7 @@ export default function HomeScreen() {
             />
             <TextInput
               style={styles.input}
-              placeholder="Fecha de nacimiento"
+              placeholder="Fecha de Nacimiento"
               value={newPatient.dateOfBirth}
               onChangeText={(text) =>
                 setNewPatient({ ...newPatient, dateOfBirth: text })
@@ -272,7 +314,7 @@ export default function HomeScreen() {
             />
             <TextInput
               style={styles.input}
-              placeholder="Factor de riesgo"
+              placeholder="Factor de Riesgo"
               value={newPatient.riskFactor}
               onChangeText={(text) =>
                 setNewPatient({ ...newPatient, riskFactor: text })
@@ -329,7 +371,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   tableHeader: {
-    flex: 5,
     flexDirection: "row",
     justifyContent: "space-between",
     backgroundColor: "#f2f2f2",
@@ -348,7 +389,7 @@ const styles = StyleSheet.create({
   },
   actionsCell: {
     flexDirection: "row",
-    justifyContent: "space-around",
+    justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 5,
   },
@@ -396,5 +437,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 20,
+  },
+  modalCloseButton: {
+    color: "blue",
+    textAlign: "center",
+    marginTop: 10,
   },
 });

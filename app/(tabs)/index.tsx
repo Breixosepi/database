@@ -13,6 +13,7 @@ import {
 } from "react-native";
 
 const url = "https://medicine-backend-8n75.onrender.com/api/patient";
+// const url = "localhost:4000/api/patient";
 const itemsPerPage = 10;
 
 export default function HomeScreen() {
@@ -94,20 +95,17 @@ export default function HomeScreen() {
 
 	// Funciones de los botones: Eliminar, Editar, Detalles
 	const handleDelete = (id: number) => {
-		Alert.alert(
-			"Eliminar Registro",
-			"¿Estás seguro de que deseas eliminar este registro?",
-			[
-				{ text: "Cancelar" },
-				{
-					text: "Eliminar",
-					onPress: () => {
-						console.log(`Eliminar item con id ${id}`);
-						// Aquí puedes implementar la lógica de eliminación de datos en la API.
-					},
+		(async () => {
+			await fetch(url, {
+				method: "DELETE",
+				body: JSON.stringify({ id }),
+				headers: {
+					"Content-Type": "application/json",
 				},
-			]
-		);
+			});
+			await fetchPatients();
+		})();
+		closeActionMenu();
 	};
 
 	const handleEdit = () => {
@@ -134,6 +132,18 @@ export default function HomeScreen() {
 	// Función para cerrar el formulario
 	const closeForm = () => {
 		setShowForm(false);
+		setNewPatient({
+			fullName: "",
+			dateOfBirth: "",
+			age: "",
+			gender: "",
+			identificationNumber: "",
+			schooling: "",
+			grade: "",
+			riskFactor: "",
+			family: "",
+			location: "",
+		});
 	};
 
 	// Función para manejar el envío del formulario
@@ -155,28 +165,45 @@ export default function HomeScreen() {
 		}
 
 		// Aquí se podría enviar los datos a la API para guardar el nuevo paciente
-		(async () => {
-			await fetch(url, {
-				method: "POST",
-				body: JSON.stringify(newPatient),
-			});
-		})();
+		if (selectedPatient) {
+			(async () => {
+				await fetch(url, {
+					method: "PATCH",
+					body: JSON.stringify({ id: selectedPatient.id, ...newPatient }),
+					headers: {
+						"Content-Type": "application/json",
+					},
+				});
+				await fetchPatients();
+			})();
+		} else {
+			(async () => {
+				await fetch(url, {
+					method: "POST",
+					body: JSON.stringify(newPatient),
+					headers: {
+						"Content-Type": "application/json",
+					},
+				});
+				await fetchPatients();
+			})();
+		}
 
 		// Limpiar formulario y cerrar
-		// setNewPatient({
-		// 	fullName: "",
-		// 	dateOfBirth: "",
-		// 	age: "",
-		// 	gender: "",
-		// 	identificationNumber: "",
-		// 	schooling: "",
-		// 	grade: "",
-		// 	riskFactor: "",
-		// 	family: "",
-		// 	location: "",
-		// });
-		// setShowForm(false);
-		fetchPatients();
+		setNewPatient({
+			fullName: "",
+			dateOfBirth: "",
+			age: "",
+			gender: "",
+			identificationNumber: "",
+			schooling: "",
+			grade: "",
+			riskFactor: "",
+			family: "",
+			location: "",
+		});
+		setShowForm(false);
+		closeActionMenu();
 	};
 
 	return (

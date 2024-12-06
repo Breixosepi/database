@@ -244,10 +244,9 @@ export default function HomeScreen() {
 						<Text style={styles.modalTitle}>Seleccione una opción</Text>
 
 						<Button title='Editar' onPress={handleEdit} />
-						<Button
-							title='Eliminar'
-							onPress={() => handleDelete(selectedPatient.id)}
-						/>
+						<View style={styles.buttonSpacer} />
+						<Button title='Eliminar' onPress={() => handleDelete(selectedPatient.id)} />
+						<View style={styles.buttonSpacer} />
 
 						<TouchableOpacity onPress={closeActionMenu}>
 							<Text style={styles.modalCloseButton}>Cerrar</Text>
@@ -448,5 +447,9 @@ const styles = StyleSheet.create({
 		color: "blue",
 		textAlign: "center",
 		marginTop: 10,
+	},
+	buttonSpacer:
+	{
+		height: 10,
 	},
 });

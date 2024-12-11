@@ -12,15 +12,18 @@ import {
 	ScrollView,
 } from "react-native";
 
+
 const url = "https://medicine-backend-8n75.onrender.com/api/patient";
-// const url = "localhost:4000/api/patient";
 const itemsPerPage = 10;
 
 export default function HomeScreen() {
+	const [isAuthenticated, setIsAuthenticated] = useState(false);
+	const [username, setUsername] = useState("");
+	const [password, setPassword] = useState("");
 	const [currentPage, setCurrentPage] = useState(1);
 	const [searchTerm, setSearchTerm] = useState("");
 	const [patients, setPatients] = useState<any[]>([]);
-	const [showForm, setShowForm] = useState(false); // Estado para mostrar/ocultar formulario
+	const [showForm, setShowForm] = useState(false);
 	const [newPatient, setNewPatient] = useState({
 		fullName: "",
 		dateOfBirth: "",
@@ -33,9 +36,8 @@ export default function HomeScreen() {
 		family: "",
 		location: "",
 	});
-
-	const [selectedPatient, setSelectedPatient] = useState<any | null>(null); // Paciente seleccionado para editar/eliminar
-	const [showOptions, setShowOptions] = useState(false); // Estado para mostrar opciones (editar/eliminar)
+	const [selectedPatient, setSelectedPatient] = useState<any | null>(null);
+	const [showOptions, setShowOptions] = useState(false);
 
 	const fetchPatients = async () => {
 		try {
@@ -43,7 +45,6 @@ export default function HomeScreen() {
 			if (!response.ok) {
 				throw new Error(`Response status: ${response.status}`);
 			}
-
 			const json = await response.json();
 			setPatients(json);
 		} catch (error: any) {
@@ -93,7 +94,6 @@ export default function HomeScreen() {
 		setCurrentPage(1);
 	};
 
-	// Funciones de los botones: Eliminar, Editar, Detalles
 	const handleDelete = (id: number) => {
 		(async () => {
 			await fetch(url, {
@@ -109,27 +109,24 @@ export default function HomeScreen() {
 	};
 
 	const handleEdit = () => {
-		// Aquí puedes abrir un modal o formulario de edición con los datos del paciente seleccionado.
 		setShowForm(true);
 		setNewPatient(selectedPatient);
 	};
 
 	const showActionMenu = (patient: any) => {
 		setSelectedPatient(patient);
-		setShowOptions(true); // Mostrar opciones de editar/eliminar
+		setShowOptions(true);
 	};
 
 	const closeActionMenu = () => {
 		setShowOptions(false);
-		setSelectedPatient(null); // Limpiar paciente seleccionado
+		setSelectedPatient(null);
 	};
 
-	// Función para abrir el formulario
 	const openForm = () => {
 		setShowForm(true);
 	};
 
-	// Función para cerrar el formulario
 	const closeForm = () => {
 		setShowForm(false);
 		setNewPatient({
@@ -146,7 +143,6 @@ export default function HomeScreen() {
 		});
 	};
 
-	// Función para manejar el envío del formulario
 	const handleSubmit = () => {
 		if (
 			!newPatient.fullName ||
@@ -164,7 +160,6 @@ export default function HomeScreen() {
 			return;
 		}
 
-		// Aquí se podría enviar los datos a la API para guardar el nuevo paciente
 		if (selectedPatient) {
 			(async () => {
 				await fetch(url, {
@@ -189,7 +184,6 @@ export default function HomeScreen() {
 			})();
 		}
 
-		// Limpiar formulario y cerrar
 		setNewPatient({
 			fullName: "",
 			dateOfBirth: "",
@@ -206,6 +200,35 @@ export default function HomeScreen() {
 		closeActionMenu();
 	};
 
+	const handleLogin = () => {
+		if (username === "ConsuDomingo" && password === "W8#vGp@K9&LzYd%M") {
+			setIsAuthenticated(true);
+		} else {
+			alert("Usuario o contraseña incorrectos");
+		}
+	};
+
+	if (!isAuthenticated) {
+		return (
+			<View style={styles.loginContainer}>
+				<Text style={styles.loginTitle}>Iniciar Sesión</Text>
+				<TextInput
+					style={styles.input}
+					placeholder="Usuario"
+					value={username}
+					onChangeText={setUsername}
+				/>
+				<TextInput
+					style={styles.input}
+					placeholder="Contraseña"
+					secureTextEntry
+					value={password}
+					onChangeText={setPassword}
+				/>
+				<Button title="Iniciar Sesión" onPress={handleLogin} />
+			</View>
+		);
+	}
 	return (
 		<ScrollView>
 			<View style={styles.searchContainer}>
@@ -458,13 +481,6 @@ const styles = StyleSheet.create({
 		fontWeight: "bold",
 		marginBottom: 10,
 	},
-	input: {
-		borderWidth: 1,
-		borderColor: "#ccc",
-		padding: 10,
-		marginBottom: 10,
-		borderRadius: 5,
-	},
 	modalActions: {
 		flexDirection: "row",
 		justifyContent: "space-between",
@@ -478,5 +494,27 @@ const styles = StyleSheet.create({
 	buttonSpacer:
 	{
 		height: 10,
+	},
+	loginContainer: {
+		flex: 1,
+		justifyContent: "center",
+		alignItems: "center",
+		padding: 20,
+		backgroundColor: "#1E1E1E",
+	},
+	loginTitle: {
+		fontSize: 24,
+		fontWeight: "bold",
+		color: "#FFFFFF",
+		marginBottom: 20,
+	},
+	input: {
+		width: "80%",
+		borderColor: "#ccc",
+		borderWidth: 1,
+		borderRadius: 5,
+		padding: 10,
+		marginBottom: 15,
+		backgroundColor: "#FFF",
 	},
 });
